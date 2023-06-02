@@ -49,9 +49,9 @@ struct stories_packet* put_in_structs(const char* filename)
 	struct stories_packet* packet = malloc(sizeof(struct stories_packet));
 	packet->size = 0;
 	packet->buff = NULL;
-	char* name = malloc(sizeof(char) * 100);  // Replace MAX_LENGTH with the maximum expected length of the string
+	char* name = malloc(sizeof(char) * 30);  // Replace MAX_LENGTH with the maximum expected length of the string
 	char* user = malloc(sizeof(char) * 100);
-	char* date = malloc(sizeof(char) * 100);
+	char* date = malloc(sizeof(char) * 10);
 	char* story = malloc(sizeof(char) * 10000);
 	while (fscanf(file, "%[^\n]\n%[^\n]\n%[^\n]\n%[^\n]\n", user, date, name, story) == 4) {
 		packet->size++;
