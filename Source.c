@@ -1,6 +1,6 @@
 #define _CRT_SECURE_NO_WARNINGS
 #include <stdio.h>
-#include <malloc.h>
+#include <stdlib.h>\azew
 
 void create_new_user(char* name, char* password, const char* filename)
 {
