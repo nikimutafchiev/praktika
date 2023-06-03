@@ -1,6 +1,6 @@
 #define _CRT_SECURE_NO_WARNINGS
 #include <stdio.h>
-#include <stdlib.h>\azew
+#include <stdlib.h>
 
 void create_new_user(char* name, char* password, const char* filename)
 {
@@ -77,3 +77,5 @@ int main()
 	put_in_structs("stories.txt");
 	return 0;
 }
+
+// TEST COMMENT
