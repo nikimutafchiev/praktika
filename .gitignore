@@ -1,5 +1,3 @@
 *.log
 
 temp/
-
-CMakeLists.txt
