@@ -2,9 +2,9 @@ OBJS	= main.o
 SOURCE	= main.c
 HEADER	= encryption.h
 OUT		= diary_project
-CC		 = gcc
-FLAGS	 = -g -c -Wall
-LFLAGS	 = 
+CC		= gcc
+FLAGS	= -g -c -Wall
+LFLAGS	= 
 
 all: $(OBJS)
 	$(CC) -g $(OBJS) -o $(OUT) $(LFLAGS)
