@@ -1,9 +1,10 @@
+#define _CRT_SECURE_NO_WARNINGS
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
 struct stories
 {
-	char *name, *date, *user, *story;
+	char *title, *date, *user, *story;
 };
 struct stories_packet
 {
@@ -15,6 +16,7 @@ struct stories *search_by_date(struct stories_packet *packet, char *date) {
 		if (!strcmp(packet->buff[i]->date, date))
 			return packet->buff[i];
 	}
+	return NULL;
 }
 struct stories_packet *init_packet(size_t max_visualisation) {
 	struct stories_packet *p = malloc(sizeof * p);
@@ -40,11 +42,12 @@ struct stories_packet *stories_by_user(struct stories_packet *all, char *user) {
 	}
 	return stories_of_user;
 }
-struct stories *search_by_name(struct stories_packet *packet, char *name) {
-	for (size_t size = 0; size < packet->size; size++) {
-		if (!strcmp(packet->buff[size]->name, name))
-			return packet->buff[size];
+struct stories *search_by_title(struct stories_packet *packet, char *title) {
+	for (size_t i = 0; i < packet->size; i++) {
+		if (!strcmp(packet->buff[i]->title, title))
+			return packet->buff[i];
 	}
+	return NULL;
 }
 int main() {
 
