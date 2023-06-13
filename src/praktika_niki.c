@@ -33,7 +33,15 @@ void push_in_packet(struct stories_packet *packet, size_t max_size, struct stori
 		}
 	}
 }
-
+void destroy_packet(struct stories_packet *packet) {
+	for (size_t i = 0; i < packet->size; i++) {
+		free(packet->buff[i]->date);
+		free(packet->buff[i]->user);
+		free(packet->buff[i]->story);
+		free(packet->buff[i]->title);
+		free(packet->buff[i]);
+	}
+}
 struct stories_packet *stories_by_user(struct stories_packet *all, char *user) { 
 	struct stories_packet *stories_of_user = init_packet(all->size);
 	for (size_t i = 0; i < all->size; i++) {
@@ -49,6 +57,9 @@ struct stories *search_by_title(struct stories_packet *packet, char *title) {
 	}
 	return NULL;
 }
+
+
+
 int main() {
 
 }
