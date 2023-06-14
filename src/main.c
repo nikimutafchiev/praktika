@@ -105,6 +105,12 @@ int main()
 		}
 		else if (strcmp(choice, "log in") == 0 || strcmp(choice, "Log in") == 0)
 		{
+			do
+			{
+				printf("Enter username: "); scanf("%s", input_username);
+				printf("Enter password: "); scanf("%s", input_pswrd);
+				}while()
+				//prints story
 			//chech if pswd is true and if user exists 
 		}
 		else 
