@@ -1,6 +1,10 @@
 #define _CRT_SECURE_NO_WARNINGS
+#define PSWRDMAX 20
+#define USRMAX 50
+
 #include <stdio.h>
 #include <malloc.h>
+#include <string.h>
 
 void create_new_user(char* name, char* password, const char* filename)
 {
@@ -73,11 +77,41 @@ struct stories_packet* put_in_structs(const char* filename)
 
 int main()
 {
-	create_new_user("Stefan Georgiev", "asdasdasd", "users.txt");
-	add_story("How i met your mother1", "1", "29.2.2022", "1uvu vue vue unicue veu veu u sans", "stories.txt");
-	add_story("How i met your mother23", "2", "29.2.2022", "2uvu vue vue unicue veu veu u sans", "stories.txt");
-	add_story("How i met your mother3", "3", "29.2.2022", "3uvu vue vue unicue veu veu u sans", "stories.txt");
-	add_story("How i met your mother4", "4", "29.2.2022", "4uvu vue vue unicue veu veu u sans", "stories.txt");
-	put_in_structs("stories.txt");
+	char* buffer;
+	char choice[10], new_username[USRMAX], new_password[PSWRDMAX];
+	char input_pswrd[PSWRDMAX], input_username[USRMAX];
+	buffer = generate_key(time(NULL), 64);
+
+	printf("%s\n", buffer);
+
+	/*create_new_user("Stefan Georgiev", "asdasdasd", "users.txt");
+	add_story("How i met your mother", "Josh", "29.2.2022", "uvu vue vue unicue veu veu u sans", "stories.txt");
+	add_story("How i met your mother", "Josh", "29.2.2022", "uvu vue vue unicue veu veu u sans", "stories.txt");
+	add_story("How i met your mother", "Josh", "29.2.2022", "uvu vue vue unicue veu veu u sans", "stories.txt");
+	add_story("How i met your mother", "Josh", "29.2.2022", "uvu vue vue unicue veu veu u sans", "stories.txt");
+	put_in_structs("stories.txt");*/
+
+	while (1)
+	{
+		printf("\nLog in or Sign up"); scanf("%s", choice);
+		if (strcmp(choice, "sign up") || strcmp(choice, "Sign up"))
+		{
+			do 
+			{
+				printf("\n\nEnter username(50 chars limit): "); scanf("%s", new_username);
+				printf("\nEnter password(20 chars limit): "); scanf("%s", new_password);
+			} while (strlen(new_username) > USRMAX || strlen(new_password) > PSWRDMAX || strcmp(new_password, "") || strcmp(new_username, ""));
+			create_new_user(new_username, new_password, "users.txt");
+		}
+		else if (strcmp(choice, "log in") == 0 || strcmp(choice, "Log in") == 0)
+		{
+			//chech if pswd is true and if user exists 
+		}
+		else 
+		{
+			printf("Invalid input");
+		}
+	}
+	
 	return 0;
 }
