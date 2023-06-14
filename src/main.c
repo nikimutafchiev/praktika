@@ -103,7 +103,7 @@ int main()
 			} while (strlen(new_username) > USRMAX || strlen(new_password) > PSWRDMAX || !strcmp(new_password, "") || !strcmp(new_username, ""));
 			create_new_user(new_username, new_password, "users.txt");
 		}
-		else if (strcmp(choice, "log in") == 0 || strcmp(choice, "Log in") == 0)
+		else if (!strcmp(choice, "log in") || !strcmp(choice, "Log in"))
 		{
 			do
 			{
