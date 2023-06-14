@@ -1,6 +1,9 @@
 #define _CRT_SECURE_NO_WARNINGS
 #define PSWRDMAX 20
 #define USRMAX 50
+#define TITLEMAX 30
+#define DATEMAX 10
+#define STRYMAX 10000
 
 #include <stdio.h>
 #include <malloc.h>
@@ -53,18 +56,18 @@ struct stories_packet* put_in_structs(const char* filename)
 	struct stories_packet* packet = malloc(sizeof(struct stories_packet));
 	packet->size = 0;
 	packet->buff = NULL;
-	char* title = malloc(sizeof(char) * 100);  // Replace MAX_LENGTH with the maximum expected length of the string
-	char* user = malloc(sizeof(char) * 100);
-	char* date = malloc(sizeof(char) * 100);
-	char* story = malloc(sizeof(char) * 10000);
+	char* title = malloc(sizeof(char) * TITLEMAX);  // Replace MAX_LENGTH with the maximum expected length of the string
+	char* user = malloc(sizeof(char) * USRMAX);
+	char* date = malloc(sizeof(char) * DATEMAX);
+	char* story = malloc(sizeof(char) * STRYMAX);
 	while (fscanf(file, "%[^\n]\n%[^\n]\n%[^\n]\n%[^\n]\n", user, date, title, story) == 4) {
 		packet->size++;
 		packet->buff = realloc(packet->buff, packet->size * sizeof(struct stories*));
 		packet->buff[packet->size - 1] = malloc(sizeof(struct stories)); 
-		packet->buff[packet->size - 1]->title = malloc(sizeof(char) * 30);
-		packet->buff[packet->size - 1]->user = malloc(sizeof(char) * 100);
-		packet->buff[packet->size - 1]->date = malloc(sizeof(char) * 10);
-		packet->buff[packet->size - 1]->story = malloc(sizeof(char) * 10000);
+		packet->buff[packet->size - 1]->title = malloc(sizeof(char) * TITLEMAX);
+		packet->buff[packet->size - 1]->user = malloc(sizeof(char) * USRMAX);
+		packet->buff[packet->size - 1]->date = malloc(sizeof(char) * DATEMAX);
+		packet->buff[packet->size - 1]->story = malloc(sizeof(char) * STRYMAX);
 		strcpy(packet->buff[packet->size - 1]->date, date);
 		strcpy(packet->buff[packet->size - 1]->user, user);
 		strcpy(packet->buff[packet->size - 1]->title, title);
