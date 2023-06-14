@@ -94,13 +94,13 @@ int main()
 	while (1)
 	{
 		printf("\nLog in or Sign up"); scanf("%s", choice);
-		if (strcmp(choice, "sign up") || strcmp(choice, "Sign up"))
+		if (!strcmp(choice, "sign up") || !strcmp(choice, "Sign up"))
 		{
 			do 
 			{
 				printf("\n\nEnter username(50 chars limit): "); scanf("%s", new_username);
 				printf("\nEnter password(20 chars limit): "); scanf("%s", new_password);
-			} while (strlen(new_username) > USRMAX || strlen(new_password) > PSWRDMAX || strcmp(new_password, "") || strcmp(new_username, ""));
+			} while (strlen(new_username) > USRMAX || strlen(new_password) > PSWRDMAX || !strcmp(new_password, "") || !strcmp(new_username, ""));
 			create_new_user(new_username, new_password, "users.txt");
 		}
 		else if (strcmp(choice, "log in") == 0 || strcmp(choice, "Log in") == 0)
