@@ -78,11 +78,54 @@ struct stories_packet* put_in_structs(const char* filename)
 	return packet;
 }
 
+void sign_up()
+{
+	char new_username[USRMAX], new_password[PSWRDMAX];
+	do
+	{
+		printf("\n\nEnter username(50 chars limit): "); scanf("%s", new_username);
+		printf("\nEnter password(20 chars limit): "); scanf("%s", new_password);
+	} while (strlen(new_username) > USRMAX || strlen(new_password) > PSWRDMAX || strcmp(new_password, "") || strcmp(new_username, ""));
+	create_new_user(new_username, new_password, "users.txt");
+	printf("The user was successfully created");
+}
+
+void log_in()
+{
+	char choice[20];
+	char input_pswrd[PSWRDMAX], input_username[USRMAX];
+	char story[STORYMAX], name[USRMAX], date[10];
+ 
+	do 
+	{
+		printf("\nEnter username: "); scanf("%s", input_username);
+		printf("\nEnter password: "); scanf("%s", input_pswrd);
+	} while (...);
+	do
+	{
+		printf("\n1.Write story \n2.View stories \nExit"); scanf("%s", choice);
+		if (choice == "1")
+		{
+			do
+			{
+				printf("\nEnter name of the story: "); scanf("%s", name);
+				printf("\nEnter date that you wanna set: "); scanf("%s", date);
+				printf("\nNow write your story: \n");  scanf("%s", story);
+			} while (strlen(name) > USRMAX || strlen(date) > 10 || strlen(story) > STORYMAX);
+			add_story(name, input_username, date, story, "stories.txt");
+			printf("The story was written successfully");
+		}
+		if (choice == "2")
+		{
+
+		}
+	} while (!strcmp(choice, "Exit") || !strcmp(choice, "exit"));
+}
+
 int main()
 {
 	char* buffer;
-	char choice[10], new_username[USRMAX], new_password[PSWRDMAX];
-	char input_pswrd[PSWRDMAX], input_username[USRMAX];
+	char choice[10];
 	buffer = generate_key(time(NULL), 64);
 
 	printf("%s\n", buffer);
@@ -99,22 +142,11 @@ int main()
 		printf("\nLog in or Sign up"); scanf("%s", choice);
 		if (!strcmp(choice, "sign up") || !strcmp(choice, "Sign up"))
 		{
-			do 
-			{
-				printf("\n\nEnter username(50 chars limit): "); scanf("%s", new_username);
-				printf("\nEnter password(20 chars limit): "); scanf("%s", new_password);
-			} while (strlen(new_username) > USRMAX || strlen(new_password) > PSWRDMAX || !strcmp(new_password, "") || !strcmp(new_username, ""));
-			create_new_user(new_username, new_password, "users.txt");
+			sign_up();
 		}
 		else if (!strcmp(choice, "log in") || !strcmp(choice, "Log in"))
 		{
-			do
-			{
-				printf("Enter username: "); scanf("%s", input_username);
-				printf("Enter password: "); scanf("%s", input_pswrd);
-				}while()
-				//prints story
-			//chech if pswd is true and if user exists 
+			log_in();
 		}
 		else 
 		{
@@ -124,3 +156,4 @@ int main()
 	
 	return 0;
 }
+
