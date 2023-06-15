@@ -1,9 +1,9 @@
 #define _CRT_SECURE_NO_WARNINGS
-#define PSWRDMAX 20
-#define USRMAX 50
-#define TITLEMAX 30
-#define DATEMAX 10
-#define STRYMAX 10000
+#define PSWRDMAX 20+1
+#define USRMAX 50+1
+#define TITLEMAX 30+1
+#define DATEMAX 10+1
+#define STRYMAX 10000+1
 
 #include <stdio.h>
 #include <malloc.h>
