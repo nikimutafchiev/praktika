@@ -11,14 +11,7 @@ struct stories_packet
 	struct stories **buff;
 	int size;
 };
-struct stories *search_by_date(struct stories_packet *packet, char *date) {
-	for (size_t i = 0; i < packet->size; i++) {
-		if (!strcmp(packet->buff[i]->date, date))
-			return packet->buff[i];
-	}
-	return NULL;
-}
-struct stories_packet *init_packet(size_t max_visualisation) {
+truct stories_packet *init_packet(size_t max_visualisation) {
 	struct stories_packet *p = malloc(sizeof * p);
 	p->buff = calloc(max_visualisation, sizeof(struct stories *));
 	p->size = 0;
@@ -42,6 +35,14 @@ void destroy_packet(struct stories_packet *packet) {
 		free(packet->buff[i]);
 	}
 }
+struct stories *search_by_date(struct stories_packet *packet, char *date) {
+	for (size_t i = 0; i < packet->size; i++) {
+		if (!strcmp(packet->buff[i]->date, date))
+			return packet->buff[i];
+	}
+	return NULL;
+}
+s
 struct stories_packet *stories_by_user(struct stories_packet *all, char *user) { 
 	struct stories_packet *stories_of_user = init_packet(all->size);
 	for (size_t i = 0; i < all->size; i++) {
