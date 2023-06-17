@@ -99,13 +99,12 @@ struct stories *search_by_title(struct stories_packet *packet, char *title) {
 	return NULL;
 }
 
-struct stories_packet **stories_by_user(Cipher*cbc,struct stories_packet *all, char *user) {
+struct stories_packet **stories_by_user(struct stories_packet *all, char *user) {
 	struct stories_packet **stories_of_user = malloc(2*sizeof(struct stories_packet*));
 	stories_of_user[0] = init_packet(all->size);
 	stories_of_user[1] = init_packet(all->size);
 	for (size_t i = 0; i < all->size; i++) {
 		if (!strcmp(all->buff[i]->user, user)) {
-			decrypt(cbc, all->buff[i]->story, all->buff[i]->date, strlen(all->buff[i]->story));
 			push_in_packet(stories_of_user[0], hash(all->size, all->buff[i]->title), all->buff[i]);
 		}
 	}
