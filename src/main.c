@@ -198,6 +198,11 @@ void print_story(const char* title, const char* date, const char* filename)
 	destroy_packet(packet);
 }
 
+void lowercase_words(char* str)
+{
+	for (int i = 0; str[i]; i++)
+		str[i] = tolower(str[i]);
+}
 
 void sign_up()
 {
@@ -230,8 +235,8 @@ void log_in()
 
 	do
 	{
-		printf("\n1.Write story \n2.View stories \nExit"); scanf("%s", choice);
-		choice[0] = tolower(choice[0]);
+		printf("\n1.Write story \n2.View stories \nExit"); gets(choice);
+		lowercase_words(choice);
 		if (!strcmp(choice, "1"))
 		{
 			do
@@ -246,7 +251,7 @@ void log_in()
 		if (!strcmp(choice, "2"))
 		{
 			printf("\nChoose to get the stories by title or by date\n"); gets(date_title_choice);
-			date_title_choice[0] = tolower(date_title_choice[0]);
+			lowercase_words(date_title_choice);
 			if (!strcmp(date_title_choice, "date"))
 			{
 				do
@@ -257,11 +262,19 @@ void log_in()
 						printf("\nTitle: %s\t\tDate: %s", date_stories->buff[i]->title, date_stories->buff[i]->date);
 
 					printf("\nTo view more stories - view more, to view all stories - view all or exit for exit"); gets(view_choice);
-					view_choice[0] = tolower(view_choice[0]);
+					lowercase_words(view_choice);
 					if (!strcmp(view_choice, "view more"))
+					{
 						k += 10;
+						if (k > date_stories->size)
+							k = date_stories->size;
+					}
 					if (!strcmp(view_choice, "view all"))
 						k = date_stories->size;
+
+					printf("\n\nEnter date: "); gets(date);
+					printf("\nEnter title: "); gets(name);
+					print_story(name, date, "stories.txt");
 				} while (strcmp(view_choice, "exit"));
 			}
 			if (!strcmp(date_title_choice, "title"))
@@ -274,16 +287,21 @@ void log_in()
 						printf("\nTitle: %s\t\tDate: %s", title_stories->buff[i]->title, title_stories->buff[i]->date);
 
 					printf("\nTo view more stories - view more, to view all stories - view all or exit for exit"); gets(view_choice);
-					view_choice[0] = tolower(view_choice[0]);
+					lowercase_words(view_choice);
 					if (!strcmp(view_choice, "view more"))
+					{ 
 						k += 10;
+						if(k>title_stories->size)
+							k = title_stories->size;
+					}
 					if (!strcmp(view_choice, "view all"))
 						k = title_stories->size;
+
+					printf("\n\nEnter date: "); gets(date);
+					printf("\nEnter title: "); gets(name);
+					print_story(name, date, "stories.txt");
 				} while (strcmp(view_choice, "exit"));
 			}
-			printf("\nEnter date: "); gets(date);
-			printf("\nEnter title: "); gets(name);
-			print_story(name, date, "stories.txt");
 		}
 	} while (strcmp(choice, "exit"));
 }
@@ -299,7 +317,7 @@ int main()
 	do
 	{
 		printf("\nLog in or Sign up"); gets(choice);
-		choice[0] = tolower(choice[0]);
+		lowercase_words(choice);
 		if (!strcmp(choice, "sign up"))
 			sign_up();
 		else if (!strcmp(choice, "log in"))
