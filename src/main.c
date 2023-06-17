@@ -77,7 +77,7 @@ struct stories *search_by_date(struct stories_packet *packet, char *date) {
 	}
 	return NULL;
 }
-s
+
 struct stories_packet *stories_by_user(struct stories_packet *all, char *user) { 
 	struct stories_packet *stories_of_user = init_packet(all->size);
 	for (size_t i = 0; i < all->size; i++) {
