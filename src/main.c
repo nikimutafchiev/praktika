@@ -252,9 +252,6 @@ int main()
 {
 	char* buffer;
 	char choice[10];
-	buffer = generate_key(time(NULL), 64);
-
-	printf("%s\n", buffer);
 
 	while ((!strcmp(choice, "Exit") || !strcmp(choice, "exit")))
 	{
