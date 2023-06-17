@@ -50,8 +50,13 @@ struct stories_packet *init_packet(size_t max_size) {
 	struct stories_packet *p = malloc(sizeof * p);
 	p->buff = calloc(max_size, sizeof(struct stories *));
 	p->size = 0;
-	p->capacity = 4;
+	p->capacity = max_size;
 	return p;
+}
+struct stories *resize_packet(struct stories_packet *p) {
+	p->capacity *= 2;
+	p->buff = realloc(p->buff, p->capacity * sizeof(struct stories *));
+	return p->buff;
 }
 void push_in_packet(struct stories_packet *packet, size_t max_size, struct stories* story) {
 	for (size_t i = 0; i < max_size; i++) {
