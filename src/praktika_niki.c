@@ -63,7 +63,6 @@ struct stories *search_by_title(struct stories_packet *packet, char *title) {
 	}
 	return NULL;
 }
-//хеширай тук за всеки user, добави и за дата хеширане
 
 struct stories_packet **stories_by_user(Cipher*cbc,struct stories_packet *all, char *user) {
 	struct stories_packet **stories_of_user = malloc(2*sizeof(struct stories_packet*));
