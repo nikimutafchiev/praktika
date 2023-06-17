@@ -58,13 +58,14 @@ struct stories *resize_packet(struct stories_packet *p) {
 	p->buff = realloc(p->buff, p->capacity * sizeof(struct stories *));
 	return p->buff;
 }
-void push_in_packet(struct stories_packet *packet, size_t max_size, struct stories* story) {
-	for (size_t i = 0; i < max_size; i++) {
-		if (packet->buff[i] == NULL) {
-			packet->buff[i] = story;
+void push_in_packet(struct stories_packet *packet, size_t index, struct stories *story) {
+	for (size_t i = 0; i < packet->size; i++) {
+		if (packet->buff[index] == NULL) {
+			packet->buff[index] = story;
 			packet->size++;
 			return;
 		}
+		index = (index + 1) % packet->size;
 	}
 }
 void destroy_packet(struct stories_packet *packet) {
