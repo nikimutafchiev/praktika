@@ -23,6 +23,9 @@ struct stories *resize_packet(struct stories_packet *p) {
 	p->buff = realloc(p->buff, p->capacity * sizeof(struct stories *));
 	return p->buff;
 }
+int hash(size_t size, char *s) {
+	return *s % size;
+}
 void push_in_packet(struct stories_packet *packet, size_t max_size, struct stories* story) {
 	for (size_t i = 0; i < max_size; i++) {
 		if (packet->buff[i] == NULL) {
