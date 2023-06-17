@@ -11,11 +11,11 @@ struct stories_packet
 	struct stories **buff;
 	int size,capacity;
 };
-struct stories_packet *init_packet(size_t max_size) {
+struct stories_packet *init_packet(size_t capacity) {
 	struct stories_packet *p = malloc(sizeof * p);
-	p->buff = calloc(max_visualisation, sizeof(struct stories *));
+	p->buff = calloc(capacity, sizeof(struct stories *));
 	p->size = 0;
-	p->capacity = max_size;
+	p->capacity = capacity;
 	return p;
 }
 struct stories *resize_packet(struct stories_packet *p) {
@@ -46,20 +46,20 @@ void destroy_packet(struct stories_packet *packet) {
 	}
 }
 struct stories *search_by_date(struct stories_packet *packet, char *date) {
-	size_t hash_index = hash(packet->size, date);
-	for (size_t i = 0; i < packet->size; i++) {
+	size_t hash_index = hash(packet->capacity, date);
+	for (size_t i = 0; i < packet->capacity&&packet->buff[hash_index]!=NULL; i++) {
 		if (!strcmp(packet->buff[hash_index]->date, date))
 			return packet->buff[hash_index];
-		hash_index = (hash_index + 1) % packet->size;
+		hash_index = (hash_index + 1) % packet->capacity;
 	}
 	return NULL;
 }
 struct stories *search_by_title(struct stories_packet *packet, char *title) {
-	size_t hash_index = hash(packet->size, title);
-	for (size_t i = 0; i < packet->size; i++) {
+	size_t hash_index = hash(packet->capacity, title);
+	for (size_t i = 0; i < packet->capacity&&packet->buff[hash_index]!=NULL; i++) {
 		if (!strcmp(packet->buff[hash_index]->title, title))
 			return packet->buff[hash_index];
-		hash_index = (hash_index + 1) % packet->size;
+		hash_index = (hash_index + 1) % packet->capacity;
 	}
 	return NULL;
 }
