@@ -2,32 +2,35 @@
 
 #include "cipher.h"
 
-void init(const char *iv)
+Cipher* init(const char *iv)
 {
-	cipher.history = malloc(sizeof(char *));
+	Cipher *cbc = (Cipher *) malloc(sizeof (Cipher));
 
-	cipher.len = 1;
+	cbc->len = 1;
 
-	cipher.history[0] = malloc(MAX_VECTOR + 1);
-	strcpy(cipher.history[0], iv);
+	cbc->history = malloc(sizeof(char *));
+	cbc->history[0] = malloc(MAX_VECTOR + 1);
+	memcpy(cbc->history[0], iv, MAX_VECTOR + 1);
+
+	return cbc;
 }
 
-void push(char *iv)
+void push(Cipher *cbc, char *iv)
 {
-	cipher.history = realloc(cipher.history, sizeof(char *) * ++cipher.len);
+	cbc->history = realloc(cbc->history, sizeof(char *) * ++cbc->len);
 
-	cipher.history[cipher.len - 1] = malloc(MAX_VECTOR + 1);
-	strcpy(cipher.history[cipher.len - 1], iv);
+	cbc->history[cbc->len - 1] = malloc(MAX_VECTOR + 1);
+	memcpy(cbc->history[cbc->len - 1], iv, MAX_VECTOR + 1);
 }
 
-void pop(void)
+void pop(Cipher *cbc)
 {
-	if (cipher.len == 1)
+	if (cbc->len == 1)
 		return;
 
-	free(cipher.history[cipher.len - 1]);
+	free(cbc->history[cbc->len - 1]);
 
-	cipher.history = realloc(cipher.history, sizeof(char *) * --cipher.len);
+	cbc->history = realloc(cbc->history, sizeof(char *) * --cbc->len);
 }
 
 void xor(char *data, const char *vector, size_t data_len)
@@ -68,42 +71,40 @@ void __decrypt(char *data, const char *key, size_t data_len)
 	data[i] = 0;
 }
 
-void encrypt(char *data, const char *key, size_t data_len)
+void encrypt(Cipher *cbc, char *data, const char *key, size_t data_len)
 {
-	xor(data, cipher.history[cipher.len - 1], data_len);
+	xor(data, cbc->history[cbc->len - 1], data_len);
 
 	__encrypt(data, key, data_len);
 
-	push(data, data_len);
+	push(cbc, data);
 }
 
-void decrypt(char *data, const char *key, size_t data_len)
+void decrypt(Cipher *cbc, char *data, const char *key, size_t data_len)
 {
-	if (cipher.len == 1)
+	if (cbc->len == 1)
 		return;
 
 	__decrypt(data, key, data_len);
 
-	xor(data, cipher.history[cipher.len - 2], data_len);
+	xor(data, cbc->history[cbc->len - 2], data_len);
 
-	pop();
+	pop(cbc);
 }
 
 int main()
 {
-	init("INITIAL_VECTOR_");
+	Cipher *cbc = init("*INITIAL_VECTOR*");
 
-	char buffer[256] = "Womp womp!";
-	char b[256] = "Hello world";
+	char msg[] = "Hello, World!";
 
-	encrypt(buffer, "gotin key 123", sizeof buffer);
-	encrypt(b, "blah blah", sizeof b);
+	encrypt(cbc, msg, "coolkey", sizeof msg);
 
-	decrypt(b, "blah blah", sizeof b);
-	decrypt(buffer, "gotin key 123", sizeof buffer);
+	printf("%s\n", msg);
 
-	printf("%s\n", b);
-	printf("%s\n", buffer);
+	decrypt(cbc, msg, "coolkey", sizeof msg);
+
+	printf("%s\n", msg);
 
 	return 0;
 }
