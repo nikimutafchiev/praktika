@@ -12,7 +12,8 @@
 void create_new_user(char* name, char* password, const char* filename)
 {
 	FILE* file = fopen(filename, "a");
-	if (file == NULL) {
+	if (file == NULL) 
+	{
 		printf("Failed to open the file: %s\n", filename);
 		perror("fopen");
 		return;
@@ -25,7 +26,8 @@ void create_new_user(char* name, char* password, const char* filename)
 void add_story(char* name, const char* user, const char* date, const char* story, const char* filename)
 {
 	FILE* file = fopen(filename, "a");
-	if (file == NULL) {
+	if (file == NULL) 
+	{
 		printf("Failed to open the file: %s\n", filename);
 		perror("fopen");
 		return;
@@ -40,14 +42,15 @@ struct stories
 };
 struct stories_packet
 {
-	struct stories* *buff;
+	struct stories** buff;
 	int size;
 };
 
 struct stories_packet* put_in_structs(const char* filename)
 {
 	FILE* file = fopen(filename, "r");
-	if (file == NULL) {
+	if (file == NULL) 
+	{
 		printf("Failed to open the file: %s\n", filename);
 		perror("fopen");
 		return NULL;
@@ -60,10 +63,11 @@ struct stories_packet* put_in_structs(const char* filename)
 	char* user = malloc(sizeof(char) * USRMAX);
 	char* date = malloc(sizeof(char) * DATEMAX);
 	char* story = malloc(sizeof(char) * STRYMAX);
-	while (fscanf(file, "%[^\n]\n%[^\n]\n%[^\n]\n%[^\n]\n", user, date, title, story) == 4) {
+	while (fscanf(file, "%[^\n]\n%[^\n]\n%[^\n]\n%[^\n]\n", user, date, title, story) == 4) 
+	{
 		packet->size++;
 		packet->buff = realloc(packet->buff, packet->size * sizeof(struct stories*));
-		packet->buff[packet->size - 1] = malloc(sizeof(struct stories)); 
+		packet->buff[packet->size - 1] = malloc(sizeof(struct stories));
 		packet->buff[packet->size - 1]->title = malloc(sizeof(char) * TITLEMAX);
 		packet->buff[packet->size - 1]->user = malloc(sizeof(char) * USRMAX);
 		packet->buff[packet->size - 1]->date = malloc(sizeof(char) * DATEMAX);
@@ -77,6 +81,57 @@ struct stories_packet* put_in_structs(const char* filename)
 	fclose(file);
 	return packet;
 }
+
+
+int validate_user(const char* username, const char* password, const char* filename)
+{
+	FILE* file = fopen(filename, "r");
+	if (file == NULL) 
+	{
+		printf("Failed to open the file: %s\n", filename);
+		perror("fopen");
+		return NULL;
+	}
+
+	char file_username[USRMAX], file_password[PSWRDMAX];
+	while (fscanf(file, "%s\n%s\n", file_username, file_password) == 2) 
+	{
+		if (strcmp(file_username, username) == 0 && strcmp(file_password, password) == 0) 
+		{
+			fclose(file);
+			return 1;  
+		}
+	}
+
+	fclose(file);
+	return 0;  
+}
+
+int print_story(const char* name, const char* date, const char* filename)
+{
+	FILE* file = fopen(filename, "r");
+	if (file == NULL) 
+	{
+		printf("Failed to open the file: %s\n", filename);
+		perror("fopen");
+		return NULL;
+	}
+
+	char name[TITLEMAX], date[DATEMAX], story[STRYMAX];
+	while (fscanf(file, "%[^\n]\n%[^\n]\n%[^\n]\n", name, date, story) == 3) 
+	{
+		if (strcmp(name, name) == 0 && strcmp(date, date) == 0) 
+		{
+			printf("\nStory: %s\n", story);
+			fclose(file);
+			return;
+		}
+	}
+
+	printf("\nStory not found\n");
+	fclose(file);
+}
+
 
 void sign_up()
 {
@@ -94,30 +149,35 @@ void log_in()
 {
 	char choice[20];
 	char input_pswrd[PSWRDMAX], input_username[USRMAX];
-	char story[STORYMAX], name[USRMAX], date[10];
- 
-	do 
+	char story[STRYMAX], name[USRMAX], date[10];
+
+	do
 	{
 		printf("\nEnter username: "); scanf("%s", input_username);
 		printf("\nEnter password: "); scanf("%s", input_pswrd);
-	} while (...);
+	} while (!validate_user(input_username, input_pswrd, "users.txt"));
 	do
 	{
 		printf("\n1.Write story \n2.View stories \nExit"); scanf("%s", choice);
-		if (choice == "1")
+		if (strcmp(choice, "1"))
 		{
 			do
 			{
-				printf("\nEnter name of the story: "); scanf("%s", name);
+				printf("\nEnter tittle of the story: "); scanf("%s", name);
 				printf("\nEnter date that you wanna set: "); scanf("%s", date);
 				printf("\nNow write your story: \n");  scanf("%s", story);
-			} while (strlen(name) > USRMAX || strlen(date) > 10 || strlen(story) > STORYMAX);
+			} while (strlen(name) > USRMAX || strlen(date) > 10 || strlen(story) > STRYMAX);
 			add_story(name, input_username, date, story, "stories.txt");
 			printf("The story was written successfully");
 		}
-		if (choice == "2")
+		if (strcmp(choice, "2"))
 		{
-
+			struct stories_packet* packet = put_in_structs("stories.txt");
+			for (int i = 0; i < packet->size; i++)
+				printf("Title: %s\t\tDate: %s\n\n", packet->buff[i]->title, packet->buff[i]->date);
+			printf("\nEnter date: "); scanf("%s", date);
+			printf("\nEnter tittle: "); scanf("%s", date);
+			print_story(name, date, "stories.txt");
 		}
 	} while (!strcmp(choice, "Exit") || !strcmp(choice, "exit"));
 }
@@ -130,30 +190,16 @@ int main()
 
 	printf("%s\n", buffer);
 
-	/*create_new_user("Stefan Georgiev", "asdasdasd", "users.txt");
-	add_story("How i met your mother", "Josh", "29.2.2022", "uvu vue vue unicue veu veu u sans", "stories.txt");
-	add_story("How i met your mother", "Josh", "29.2.2022", "uvu vue vue unicue veu veu u sans", "stories.txt");
-	add_story("How i met your mother", "Josh", "29.2.2022", "uvu vue vue unicue veu veu u sans", "stories.txt");
-	add_story("How i met your mother", "Josh", "29.2.2022", "uvu vue vue unicue veu veu u sans", "stories.txt");
-	put_in_structs("stories.txt");*/
-
-	while (1)
+	while ((!strcmp(choice, "Exit") || !strcmp(choice, "exit")))
 	{
 		printf("\nLog in or Sign up"); scanf("%s", choice);
 		if (!strcmp(choice, "sign up") || !strcmp(choice, "Sign up"))
-		{
 			sign_up();
-		}
 		else if (!strcmp(choice, "log in") || !strcmp(choice, "Log in"))
-		{
 			log_in();
-		}
-		else 
-		{
+		else
 			printf("Invalid input");
-		}
 	}
-	
+
 	return 0;
 }
-
