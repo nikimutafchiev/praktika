@@ -69,11 +69,11 @@ struct stories_packet **stories_by_user(struct stories_packet *all, char *user) 
 	stories_of_user[1] = init_packet(all->size);
 	for (size_t i = 0; i < all->size; i++) {
 		if (!strcmp(all->buff[i]->user, user))
-			push_in_packet(stories_of_user[0], hash(all->capacity, all->buff[i]->title), all->buff[i]);
+			push_in_packet(stories_of_user[0], hash(all->size, all->buff[i]->title), all->buff[i]);
 	}
 	for (size_t i = 0; i < all->size; i++) {
 		if (!strcmp(all->buff[i]->user, user))
-			push_in_packet(stories_of_user[1], hash(all->capacity, all->buff[i]->date), all->buff[i]);
+			push_in_packet(stories_of_user[1], hash(all->size, all->buff[i]->date), all->buff[i]);
 	}
 	return stories_of_user;
 }
