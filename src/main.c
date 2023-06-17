@@ -163,7 +163,7 @@ void log_in()
 		{
 			do
 			{
-				printf("\nEnter tittle of the story: "); scanf("%s", name);
+				printf("\nEnter title of the story: "); scanf("%s", name);
 				printf("\nEnter date that you wanna set: "); scanf("%s", date);
 				printf("\nNow write your story: \n");  scanf("%s", story);
 			} while (strlen(name) > USRMAX || strlen(date) > 10 || strlen(story) > STRYMAX);
@@ -176,7 +176,7 @@ void log_in()
 			for (int i = 0; i < packet->size; i++)
 				printf("Title: %s\t\tDate: %s\n\n", packet->buff[i]->title, packet->buff[i]->date);
 			printf("\nEnter date: "); scanf("%s", date);
-			printf("\nEnter tittle: "); scanf("%s", date);
+			printf("\nEnter title: "); scanf("%s", date);
 			print_story(name, date, "stories.txt");
 		}
 	} while (!strcmp(choice, "Exit") || !strcmp(choice, "exit"));
