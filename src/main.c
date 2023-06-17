@@ -78,13 +78,23 @@ void destroy_packet(struct stories_packet *packet) {
 	}
 }
 struct stories *search_by_date(struct stories_packet *packet, char *date) {
+	size_t hash_index = hash(packet->size, date);
 	for (size_t i = 0; i < packet->size; i++) {
-		if (!strcmp(packet->buff[i]->date, date))
-			return packet->buff[i];
+		if (!strcmp(packet->buff[hash_index]->date, date))
+			return packet->buff[hash_index];
+		hash_index = (hash_index + 1) % packet->size;
 	}
 	return NULL;
 }
-
+struct stories *search_by_title(struct stories_packet *packet, char *title) {
+	size_t hash_index = hash(packet->size, title);
+	for (size_t i = 0; i < packet->size; i++) {
+		if (!strcmp(packet->buff[hash_index]->title, title))
+			return packet->buff[hash_index];
+		hash_index = (hash_index + 1) % packet->size;
+	}
+	return NULL;
+}
 struct stories_packet *stories_by_user(struct stories_packet *all, char *user) { 
 	struct stories_packet *stories_of_user = init_packet(all->size);
 	for (size_t i = 0; i < all->size; i++) {
@@ -93,14 +103,6 @@ struct stories_packet *stories_by_user(struct stories_packet *all, char *user) {
 	}
 	return stories_of_user;
 }
-struct stories *search_by_title(struct stories_packet *packet, char *title) {
-	for (size_t i = 0; i < packet->size; i++) {
-		if (!strcmp(packet->buff[i]->title, title))
-			return packet->buff[i];
-	}
-	return NULL;
-}
-
 struct stories_packet* put_in_structs(const char* filename)
 {
 	FILE* file = fopen(filename, "r");
