@@ -47,7 +47,7 @@ struct stories_packet
 };
 struct stories_packet *init_packet(size_t max_size) {
 	struct stories_packet *p = malloc(sizeof * p);
-	p->buff = calloc(max_visualisation, sizeof(struct stories *));
+	p->buff = calloc(max_size, sizeof(struct stories *));
 	p->size = 0;
 	p->capacity = 4;
 	return p;
