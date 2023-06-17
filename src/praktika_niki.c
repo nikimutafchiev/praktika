@@ -9,12 +9,13 @@ struct stories
 struct stories_packet
 {
 	struct stories **buff;
-	int size;
+	int size,capacity;
 };
-truct stories_packet *init_packet(size_t max_visualisation) {
+struct stories_packet *init_packet(size_t max_size) {
 	struct stories_packet *p = malloc(sizeof * p);
 	p->buff = calloc(max_visualisation, sizeof(struct stories *));
 	p->size = 0;
+	p->capacity = 4;
 	return p;
 }
 void push_in_packet(struct stories_packet *packet, size_t max_size, struct stories* story) {
