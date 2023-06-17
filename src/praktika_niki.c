@@ -27,13 +27,13 @@ int hash(size_t size, char *s) {
 	return *s % size;
 }
 void push_in_packet(struct stories_packet *packet, size_t index, struct stories *story) {
-	for (size_t i = 0; i < packet->size; i++) {
+	for (size_t i = 0; i < packet->capacity; i++) {
 		if (packet->buff[index] == NULL) {
 			packet->buff[index] = story;
 			packet->size++;
 			return;
 		}
-		index = (index + 1) % packet->size;
+		index = (index + 1) % packet->capacity;
 	}
 }
 void destroy_packet(struct stories_packet *packet) {
@@ -63,13 +63,17 @@ struct stories *search_by_title(struct stories_packet *packet, char *title) {
 	}
 	return NULL;
 }
-struct stories_packet **stories_by_user(struct stories_packet *all, char *user) {
+//хеширай тук за всеки user, добави и за дата хеширане
+
+struct stories_packet **stories_by_user(Cipher*cbc,struct stories_packet *all, char *user) {
 	struct stories_packet **stories_of_user = malloc(2*sizeof(struct stories_packet*));
 	stories_of_user[0] = init_packet(all->size);
 	stories_of_user[1] = init_packet(all->size);
 	for (size_t i = 0; i < all->size; i++) {
-		if (!strcmp(all->buff[i]->user, user))
+		if (!strcmp(all->buff[i]->user, user)) {
+			decrypt(cbc, all->buff[i]->story, all->buff[i]->date, strlen(all->buff[i]->story));
 			push_in_packet(stories_of_user[0], hash(all->size, all->buff[i]->title), all->buff[i]);
+		}
 	}
 	for (size_t i = 0; i < all->size; i++) {
 		if (!strcmp(all->buff[i]->user, user))
@@ -77,7 +81,6 @@ struct stories_packet **stories_by_user(struct stories_packet *all, char *user) 
 	}
 	return stories_of_user;
 }
-
 
 
 
