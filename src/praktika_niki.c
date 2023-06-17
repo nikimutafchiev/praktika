@@ -63,11 +63,17 @@ struct stories *search_by_title(struct stories_packet *packet, char *title) {
 	}
 	return NULL;
 }
-struct stories_packet *stories_by_user(struct stories_packet *all, char *user) { 
-	struct stories_packet *stories_of_user = init_packet(all->size);
+struct stories_packet **stories_by_user(struct stories_packet *all, char *user) {
+	struct stories_packet **stories_of_user = malloc(2*sizeof(struct stories_packet*));
+	stories_of_user[0] = init_packet(all->size);
+	stories_of_user[1] = init_packet(all->size);
 	for (size_t i = 0; i < all->size; i++) {
-		if(!strcmp(all->buff[i]->user, user))
-		push_in_packet(stories_of_user, user, all->buff[i]);
+		if (!strcmp(all->buff[i]->user, user))
+			push_in_packet(stories_of_user[0], hash(all->capacity, all->buff[i]->title), all->buff[i]);
+	}
+	for (size_t i = 0; i < all->size; i++) {
+		if (!strcmp(all->buff[i]->user, user))
+			push_in_packet(stories_of_user[1], hash(all->capacity, all->buff[i]->date), all->buff[i]);
 	}
 	return stories_of_user;
 }
