@@ -43,7 +43,7 @@ struct stories
 struct stories_packet
 {
 	struct stories** buff;
-	int size;
+	int size,capacity;
 };
 struct stories_packet *init_packet(size_t max_size) {
 	struct stories_packet *p = malloc(sizeof * p);
