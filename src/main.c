@@ -25,7 +25,7 @@ void create_new_user(char* name, char* password, const char* filename)
 	fclose(file);
 }
 
-void add_story(char* name, const char* user, const char* date, const char* story, const char* filename)
+void add_story(char* title, const char* user, const char* date, const char* story, const char* filename)
 {
 	FILE* file = fopen(filename, "a");
 	if (file == NULL) 
@@ -35,7 +35,7 @@ void add_story(char* name, const char* user, const char* date, const char* story
 		return;
 	}
 
-	fprintf(file, "%s\n%s\n%s\n%s\n", user, date, name, story);
+	fprintf(file, "%s\n%s\n%s\n%s\n", user, date, title, story);
 	fclose(file);
 }
 struct stories
