@@ -175,26 +175,27 @@ int validate_user(const char* username, const char* password, const char* filena
 	return 0;
 }
 
-void print_story(const char* title, const char* date, const char* filename)
+void print_story(const char* title, const char* date, const char* username, const char* filename)
 {
 	struct stories_packet* packet = put_in_structs(filename);
 	struct stories* found_story = NULL;
 
-	if (title != NULL && date != NULL) 
+	if (title != NULL && date != NULL)
 	{
 		found_story = search_by_title(packet, title);
 		if (found_story == NULL)
 			found_story = search_by_date(packet, date);
 	}
-	else if (title != NULL) 
+	else if (title != NULL)
 		found_story = search_by_title(packet, title);
-	else if (date != NULL) 
+	else if (date != NULL)
 		found_story = search_by_date(packet, date);
 
-	if (found_story != NULL) 
-		printf("\nStory: %s\n", found_story->story);
-	else 
+	if (found_story != NULL && strcmp(found_story->user, username) == 0)
+		printf("\nStory:\n%s", found_story->story);
+	else
 		printf("\nStory not found\n");
+
 	destroy_packet(packet);
 }
 
@@ -252,55 +253,33 @@ void log_in()
 		{
 			printf("\nChoose to get the stories by title or by date\n"); gets(date_title_choice);
 			lowercase_words(date_title_choice);
+			do
+			{
+				if (k == date_stories->size)
+					break;
+				for (int i = 0; i < k; i++)
+					printf("\nTitle: %s\t\tDate: %s", date_stories->buff[i]->title, date_stories->buff[i]->date);
+
+				printf("\nTo view more stories - view more, to view all stories - view all or exit for exit"); gets(view_choice);
+				lowercase_words(view_choice);
+				if (!strcmp(view_choice, "view more"))
+				{
+					k += 10;
+					if (k > date_stories->size || k>title_stories->size)
+						k = date_stories->size;
+				}
+				if (!strcmp(view_choice, "view all"))
+					k = date_stories->size;
+			} while (strcmp(view_choice, "exit"));
 			if (!strcmp(date_title_choice, "date"))
 			{
-				do
-				{
-					if (k == date_stories->size)
-						break;
-					for (int i = 0; i < k; i++)
-						printf("\nTitle: %s\t\tDate: %s", date_stories->buff[i]->title, date_stories->buff[i]->date);
-
-					printf("\nTo view more stories - view more, to view all stories - view all or exit for exit"); gets(view_choice);
-					lowercase_words(view_choice);
-					if (!strcmp(view_choice, "view more"))
-					{
-						k += 10;
-						if (k > date_stories->size)
-							k = date_stories->size;
-					}
-					if (!strcmp(view_choice, "view all"))
-						k = date_stories->size;
-
-					printf("\n\nEnter date: "); gets(date);
 					printf("\nEnter title: "); gets(name);
-					print_story(name, date, "stories.txt");
-				} while (strcmp(view_choice, "exit"));
+					print_story(name, date, input_username,"stories.txt");
 			}
 			if (!strcmp(date_title_choice, "title"))
 			{
-				do
-				{
-					if (k == title_stories->size)
-						break;
-					for (int i = 0; i < k; i++)
-						printf("\nTitle: %s\t\tDate: %s", title_stories->buff[i]->title, title_stories->buff[i]->date);
-
-					printf("\nTo view more stories - view more, to view all stories - view all or exit for exit"); gets(view_choice);
-					lowercase_words(view_choice);
-					if (!strcmp(view_choice, "view more"))
-					{ 
-						k += 10;
-						if(k>title_stories->size)
-							k = title_stories->size;
-					}
-					if (!strcmp(view_choice, "view all"))
-						k = title_stories->size;
-
-					printf("\n\nEnter date: "); gets(date);
 					printf("\nEnter title: "); gets(name);
-					print_story(name, date, "stories.txt");
-				} while (strcmp(view_choice, "exit"));
+					print_story(name, date, input_username, "stories.txt");
 			}
 		}
 	} while (strcmp(choice, "exit"));
@@ -322,7 +301,10 @@ int main()
 			sign_up();
 		else if (!strcmp(choice, "log in"))
 			log_in();
+		else if (strcmp(choice, "sign up") || strcmp(choice, "log in"))
+			printf("\nWrong input");
 	} while (strcmp(choice, "exit"));
 
 	return 0;
 }
+
