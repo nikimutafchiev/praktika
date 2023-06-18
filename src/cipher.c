@@ -1,6 +1,9 @@
 #define _CRT_SECURE_NO_WARNINGS
 
 #include "cipher.h"
+#include <stdio.h>
+#include <string.h>
+
 
 CBC init_cbc(const char *iv)
 {
@@ -233,7 +236,7 @@ char *xor(char *data, char *vector, size_t data_len)
 {
 	int i = 0;
 
-	for (; i < data_len && data[i]; ++i)
+	for (; i < data_len; ++i)  // was  i < data_len && data[i]
 	{
 		data[i] ^= vector[i % VECTOR_LEN];
 	}
@@ -248,7 +251,7 @@ char *vigenere(char *data, const char *key, size_t data_len, char op)
 	size_t key_len = strlen(key);
 	int i = 0;
 
-	for (; i < data_len && data[i]; ++i)
+	for (; i < data_len; ++i)  // was  i < data_len && data[i]
 	{
 		if (op == ENCRYPT)
 		{
@@ -319,32 +322,9 @@ char *random_str(size_t len)
 	char *new_str = malloc(len + 1);
 
 	for (int i = 0; i < len; ++i)
-		new_str[i] = rand() % 95 + 32;  // random printable ascii char [0; 127]
+		new_str[i] = rand() % 27 + 97;  // random printable ascii char [32; 127]
 
 	new_str[len] = 0;
 
 	return new_str;
-}
-
-int main()
-{
-	CBC c1 = init_cbc(NULL);
-
-	char msg1[] = "Very secret message zawgie!";
-	char msg2[] = "Cucumbers + Ketchup = Tasty.";
-	char msg3[] = "blah blah blah";
-
-	encrypt(c1, msg1, "secret_key", LEN(msg1));
-	encrypt(c1, msg2, "key_coolest", LEN(msg2));
-	encrypt(c1, msg3, "blah", LEN(msg3));
-
-	decrypt(c1, msg1, "secret_key", LEN(msg1), 0);
-	decrypt(c1, msg2, "key_coolest", LEN(msg2), 0);
-	decrypt(c1, msg3, "blah", LEN(msg3), 0);
-
-	printf("%s\n", msg1);
-	printf("%s\n", msg2);
-	printf("%s\n", msg3);
-
-	return 0;
 }
