@@ -1,4 +1,5 @@
 #define _CRT_SECURE_NO_WARNINGS
+
 #define PSWRDMAX 20+1
 #define USRMAX 50+1
 #define TITLEMAX 30+1
@@ -10,10 +11,13 @@
 #include <malloc.h>
 #include <string.h>
 #include <ctype.h>
+#include "stories.h"
+#include "cipher.h"
 
-void create_new_user(char* name, char* password, const char* filename)
+
+void create_new_user(char *name, char *password, const char *filename)
 {
-	FILE* file = fopen(filename, "a");
+	FILE *file = fopen(filename, "a");
 	if (file == NULL)
 	{
 		printf("Failed to open the file: %s\n", filename);
@@ -25,9 +29,9 @@ void create_new_user(char* name, char* password, const char* filename)
 	fclose(file);
 }
 
-void add_story(char* title, const char* user, const char* date, const char* story, const char* filename)
+void add_story(char *title, const char *user, const char *date, const char *story, const char *filename, char *password, CBC cbc)
 {
-	FILE* file = fopen(filename, "a");
+	FILE *file = fopen(filename, "a");
 	if (file == NULL)
 	{
 		printf("Failed to open the file: %s\n", filename);
@@ -35,89 +39,15 @@ void add_story(char* title, const char* user, const char* date, const char* stor
 		return;
 	}
 
+	encrypt(cbc, story, password, strlen(story));
+
 	fprintf(file, "%s\n%s\n%s\n%s\n", user, date, title, story);
 	fclose(file);
 }
-struct stories
-{
-	char* title, * date, * user, * story;
-};
-struct stories_packet
-{
-	struct stories** buff;
-	int size, capacity;
-};
-struct stories_packet* init_packet(size_t capacity) {
-	struct stories_packet* p = malloc(sizeof * p);
-	p->buff = calloc(capacity, sizeof(struct stories*));
-	p->size = 0;
-	p->capacity = capacity;
-	return p;
-}
-struct stories* resize_packet(struct stories_packet* p) {
-	p->capacity *= 2;
-	p->buff = realloc(p->buff, p->capacity * sizeof(struct stories*));
-	return p->buff;
-}
-int hash(size_t size, char* s) {
-	return *s % size;
-}
-void push_in_packet(struct stories_packet* packet, size_t index, struct stories* story) {
-	for (size_t i = 0; i < packet->capacity; i++) {
-		if (packet->buff[index] == NULL) {
-			packet->buff[index] = story;
-			packet->size++;
-			return;
-		}
-		index = (index + 1) % packet->capacity;
-	}
-}
-void destroy_packet(struct stories_packet* packet) {
-	for (size_t i = 0; i < packet->size; i++) {
-		free(packet->buff[i]->date);
-		free(packet->buff[i]->user);
-		free(packet->buff[i]->story);
-		free(packet->buff[i]->title);
-		free(packet->buff[i]);
-	}
-}
-struct stories* search_by_date(struct stories_packet* packet, char* date) {
-	size_t hash_index = hash(packet->capacity, date);
-	for (size_t i = 0; i < packet->capacity && packet->buff[hash_index] != NULL; i++) {
-		if (!strcmp(packet->buff[hash_index]->date, date))
-			return packet->buff[hash_index];
-		hash_index = (hash_index + 1) % packet->capacity;
-	}
-	return NULL;
-}
-struct stories* search_by_title(struct stories_packet* packet, char* title) {
-	size_t hash_index = hash(packet->capacity, title);
-	for (size_t i = 0; i < packet->capacity && packet->buff[hash_index] != NULL; i++) {
-		if (!strcmp(packet->buff[hash_index]->title, title))
-			return packet->buff[hash_index];
-		hash_index = (hash_index + 1) % packet->capacity;
-	}
-	return NULL;
-}
 
-struct stories_packet** stories_by_user(struct stories_packet* all, char* user) {
-	struct stories_packet** stories_of_user = malloc(2 * sizeof(struct stories_packet*));
-	stories_of_user[0] = init_packet(all->size);
-	stories_of_user[1] = init_packet(all->size);
-	for (size_t i = 0; i < all->size; i++) {
-		if (!strcmp(all->buff[i]->user, user)) {
-			push_in_packet(stories_of_user[0], hash(all->size, all->buff[i]->title), all->buff[i]);
-		}
-	}
-	for (size_t i = 0; i < all->size; i++) {
-		if (!strcmp(all->buff[i]->user, user))
-			push_in_packet(stories_of_user[1], hash(all->size, all->buff[i]->date), all->buff[i]);
-	}
-	return stories_of_user;
-}
-struct stories_packet* put_in_structs(const char* filename)
+struct stories_packet *put_in_structs(const char *filename, char *password, CBC cbc)
 {
-	FILE* file = fopen(filename, "r");
+	FILE *file = fopen(filename, "r");
 	if (file == NULL)
 	{
 		printf("Failed to open the file: %s\n", filename);
@@ -125,13 +55,17 @@ struct stories_packet* put_in_structs(const char* filename)
 		return NULL;
 	}
 
-	struct stories_packet* packet = init_packet(4);
-	char* title = malloc(sizeof(char) * TITLEMAX);  // Replace MAX_LENGTH with the maximum expected length of the string
-	char* user = malloc(sizeof(char) * USRMAX);
-	char* date = malloc(sizeof(char) * DATEMAX);
-	char* story = malloc(sizeof(char) * STRYMAX);
+	struct stories_packet *packet = init_packet(4);
+	char *title = malloc(sizeof(char) * TITLEMAX);  // Replace MAX_LENGTH with the maximum expected length of the string
+	char *user = malloc(sizeof(char) * USRMAX);
+	char *date = malloc(sizeof(char) * DATEMAX);
+	char *story = malloc(sizeof(char) * STRYMAX);
 	while (fscanf(file, "%[^\n]\n%[^\n]\n%[^\n]\n%[^\n]\n", user, date, title, story) == 4)
 	{
+		fgets(story, STRYMAX, file);
+
+		decrypt(cbc, story, password, strlen(story), 0);
+
 		packet->size++;
 		if (packet->size > packet->capacity)
 			packet->buff = resize_packet(packet);
@@ -146,14 +80,19 @@ struct stories_packet* put_in_structs(const char* filename)
 		strcpy(packet->buff[packet->size - 1]->story, story);
 	}
 
+	free(title);
+	free(user);
+	free(date);
+	free(story);
+
 	fclose(file);
 	return packet;
 }
 
 
-int validate_user(const char* username, const char* password, const char* filename)
+int validate_user(const char *username, const char *password, const char *filename)
 {
-	FILE* file = fopen(filename, "r");
+	FILE *file = fopen(filename, "r");
 	if (file == NULL)
 	{
 		printf("Failed to open the file: %s\n", filename);
@@ -175,9 +114,9 @@ int validate_user(const char* username, const char* password, const char* filena
 	return 0;
 }
 
-void print_story(const char* title, const char* date, struct stories_packet* packet)
+void print_story(const char *title, const char *date, struct stories_packet *packet)
 {
-	struct stories* found_story = NULL;
+	struct stories *found_story = NULL;
 
 	if (*title != NULL)
 		found_story = search_by_title(packet, title);
@@ -190,7 +129,7 @@ void print_story(const char* title, const char* date, struct stories_packet* pac
 		printf("\nStory not found\n");
 }
 
-void lowercase_words(char* str)
+void lowercase_words(char *str)
 {
 	for (int i = 0; str[i]; i++)
 		str[i] = tolower(str[i]);
@@ -208,17 +147,12 @@ void sign_up()
 	printf("\nThe user was successfully created");
 }
 
-void log_in()
+void log_in(CBC cbc)
 {
 	int k = 10, i = 0;
 	char choice[20], date_title_choice[20], view_choice[20];
 	char input_pswrd[PSWRDMAX], input_username[USRMAX];
 	char story[STRYMAX], name[USRMAX], date[DATEMAX];
-
-
-	struct stories_packet** user_stories = stories_by_user(put_in_structs("stories.txt"), input_username);
-	struct stories_packet* title_stories = user_stories[0];
-	struct stories_packet* date_stories = user_stories[1];
 
 	do
 	{
@@ -238,22 +172,23 @@ void log_in()
 				printf("\nEnter date that you wanna set: "); gets(date);
 				printf("\nNow write your story: \n");  gets(story);
 			} while (strlen(name) > USRMAX || strlen(date) > DATEMAX || strlen(story) > STRYMAX);
-			add_story(name, input_username, date, story, "stories.txt");
+			add_story(name, input_username, date, story, "stories.txt", input_pswrd, cbc);
 			printf("\nThe story was written successfully");
 		}
 		if (!strcmp(choice, "2"))
 		{
-			struct stories_packet** user_stories = stories_by_user(put_in_structs("stories.txt"), input_username);
-			struct stories_packet* title_stories = user_stories[0];
-			struct stories_packet* date_stories = user_stories[1];
+			struct stories_packet **user_stories = stories_by_user(put_in_structs("stories.txt", input_pswrd, cbc), input_username);
+			struct stories_packet *title_stories = user_stories[0];
+			struct stories_packet *date_stories = user_stories[1];
 
 			i = 0;
+			k = 10;
 			do
 			{
 				if (k > date_stories->size)
 					k = date_stories->size;
 
-				for (i; i < k; i++)
+				for (; i < k; i++)
 					printf("\nTitle: %s\t\tDate: %s", date_stories->buff[i]->title, date_stories->buff[i]->date);
 
 				printf("\nTo view more stories - view more, to view all stories - view all or exit for exit: "); gets(view_choice);
@@ -283,30 +218,34 @@ void log_in()
 				printf("\nEnter title: "); gets(name);
 				print_story(name, date, title_stories);
 			}
+
+			destroy_packet(date_stories);
+			free(user_stories);
 		}
 	} while (strcmp(choice, "exit"));
-
-	destroy_packet(user_stories);
-	destroy_packet(date_stories);
-	destroy_packet(title_stories);
 }
 
 int main()
 {
-	char choice[10];
+	CBC cbc = load_cbc(DEFAULT_FILENAME, 1);
 
+	char choice[10];
 
 	do
 	{
 		printf("\nLog in or Sign up: "); gets(choice);
 		lowercase_words(choice);
+
 		if (!strcmp(choice, "sign up"))
 			sign_up();
 		else if (!strcmp(choice, "log in"))
-			log_in();
-		if (strcmp(choice, "sign up") && strcmp(choice, "log in") && strcmp(choice,"exit"))
+			log_in(cbc);
+		if (strcmp(choice, "sign up") && strcmp(choice, "log in") && strcmp(choice, "exit"))
 			printf("\nWrong input\n");
-	} while (strcmp(choice, "exit"));
+	}
+	while (strcmp(choice, "exit"));
+
+	save_cbc(DEFAULT_FILENAME, cbc);
 
 	return 0;
 }
