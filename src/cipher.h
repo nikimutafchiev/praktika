@@ -3,22 +3,70 @@
 #include <string.h>
 #include <stdio.h>
 #include <stdlib.h>
-#include <assert.h>
+#include <time.h>
 
-#define MAX_VECTOR 16
+#define LEN(x) ( sizeof (x) / sizeof (*x) )
+#define DEFAULT_FILENAME "cbc.txt"
+#define VECTOR_LEN 16  // in bytes
+#define ENCRYPT 1
+#define DECRYPT 0
+#define POP_LAST 1
 
-typedef struct cipher_t
+typedef struct block_t* Block;
+typedef struct cbc_t *CBC;
+
+struct block_t
 {
-	char **history;
+	char *iv;
+
+	Block next;
+	Block prev;
+};
+
+struct cbc_t
+{
+	Block head;
+	Block tail;
 	size_t len;
+};
 
-} Cipher;
+/*
+         always here                   essential part
 
-Cipher* init(const char *);
-void push(Cipher *, char *);
-void pop(Cipher *);
-void xor(char *, const char *, size_t);
-void __encrypt(char *, const char *, size_t);
-void __decrypt(char *, const char *, size_t);
-void encrypt(Cipher *, char *, const char *, size_t);
-void decrypt(Cipher *, char *, const char *, size_t);
+          ___/\___        ___________________/\__________________
+         /        \      /                                       \
+          ________        ________        ________        ________
+         |        |      |        |      |        |      |        |
+         |   IV   |      | OWN_IV |      | OWN_IV |      | OWN_IV |
+         |  NEXT  | ---> |  NEXT  | ---> |  NEXT  | ---> |  NEXT  | --> 0
+   0 <-- |  PREV  | <--- |  PREV  | <--- |  PREV  | <--- |  PREV  |
+         |________|      |________|      |________|      |________|
+*/
+
+static int cbc_count = 0;
+
+CBC init_cbc(const char *);
+Block init_block(const char *);
+
+void free_cbc(CBC);
+void free_block(Block);
+
+void push_front(CBC, const char *);
+void push_back(CBC, const char *);
+void pop_front(CBC);
+void pop_back(CBC);
+void clear(CBC);
+
+int is_empty(CBC);
+
+CBC load_cbc(const char *, int);  // from file
+void save_cbc(const char *, CBC);  // to file
+
+char *xor(char *, char *, size_t);
+char *vigenere(char *, const char *, size_t, char);
+void encrypt(CBC, char *, const char *, size_t);
+void decrypt(CBC, char *, const char *, size_t, char);
+
+/* ----- UTILITY ----- */
+char *strndup(const char *, int);
+char *random_str(size_t);
