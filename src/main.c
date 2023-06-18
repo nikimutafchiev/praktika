@@ -62,8 +62,6 @@ struct stories_packet *put_in_structs(const char *filename, char *password, CBC 
 	char *story = malloc(sizeof(char) * STRYMAX);
 	while (fscanf(file, "%[^\n]\n%[^\n]\n%[^\n]\n%[^\n]\n", user, date, title, story) == 4)
 	{
-		fgets(story, STRYMAX, file);
-
 		decrypt(cbc, story, password, strlen(story), 0);
 
 		packet->size++;
