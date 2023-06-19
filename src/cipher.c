@@ -12,15 +12,13 @@ CBC init_cbc(const char *iv)
 	new_cbc->head = new_cbc->tail = NULL;
 	new_cbc->len = 0;
 
-	push_back(new_cbc, iv);
-
-	cbc_count += 1;
+	//push_back(new_cbc, iv, 0);
 
 	return new_cbc;
 }
 
 // if iv is NULL, create a random one
-Block init_block(const char *iv)
+Block init_block(const char *iv, size_t data_len)
 {
 	Block new_block = malloc(sizeof * new_block);
 
@@ -33,6 +31,7 @@ Block init_block(const char *iv)
 		new_block->iv = strndup(iv, VECTOR_LEN);
 	}
 
+	new_block->data_len = data_len;
 	new_block->next = new_block->prev = NULL;
 
 	return new_block;
@@ -53,8 +52,6 @@ void free_cbc(CBC *cbc)
 
 	free(*cbc);
 	*cbc = NULL;
-	
-	cbc_count -= 1;
 }
 
 void free_block(Block *block)
@@ -64,27 +61,9 @@ void free_block(Block *block)
 	*block = NULL;
 }
 
-void push_front(CBC cbc, const char *iv)
+void push_back(CBC cbc, const char *iv, size_t data_len)
 {
-	Block new_block = init_block(iv);
-
-	if (cbc->len == 0)
-	{
-		cbc->head = cbc->tail = new_block;
-	}
-	else
-	{
-		cbc->head->prev = new_block;
-		new_block->next = cbc->head;
-		cbc->head = new_block;
-	}
-
-	cbc->len += 1;
-}
-
-void push_back(CBC cbc, const char *iv)
-{
-	Block new_block = init_block(iv);
+	Block new_block = init_block(iv, data_len);
 
 	if (cbc->len == 0)
 	{
@@ -99,27 +78,6 @@ void push_back(CBC cbc, const char *iv)
 	}
 
 	cbc->len += 1;
-}
-
-void pop_front(CBC cbc)
-{
-	if (cbc->len == 0)
-		return;
-
-	Block to_del = cbc->head;
-
-	if (cbc->len == 1)
-	{
-		cbc->head = cbc->tail = NULL;
-	}
-	else
-	{
-		cbc->head = cbc->head->next;
-	}
-
-	free_block(&to_del);
-
-	cbc->len -= 1;
 }
 
 void pop_back(CBC cbc)
@@ -143,63 +101,29 @@ void pop_back(CBC cbc)
 	cbc->len -= 1;
 }
 
-void clear(CBC cbc)  // delete all except block with init vector
+size_t size_from_iv(CBC cbc, const char *iv)
 {
-	Block iter = cbc->head->next;
-
-	while (iter)
+	for (Block iter = cbc->head; iter; iter = iter->next)
 	{
-		Block to_del = iter;
-
-		iter = iter->next;
-
-		free_block(&to_del);
+		if (strncmp(iter->iv, iv, 5))
+			return iter->data_len;
 	}
 }
 
-int is_empty(CBC cbc)
-{
-	return cbc->len == 1;
-}
-
-/*
-FORMAT:
-<num1> <init_vector1> <vector 1> <vector 2> ... <vector N> \n
-<num2> <init_vector2> <vector 1> <vector 2> ... <vector N> \n
-.
-.
-.
-
-EX:
-1 initial___vector 08dyoiphvaosbvnw 9a0-xsajkbdwrqwb x0-u9fsasplcagbh ...
-2 coolvector123123 b0[8ghas[pkdvh=w zupxovg]b[qiwbrt ]a-[9xwqwelmna[n ...
-.
-.
-.
-*/
-CBC load_cbc(const char *filename, int num)
+CBC load_cbc(const char *filename)
 {
 	FILE *file = fopen(filename, "r");
-	char buffer[4097];
-	
-	CBC cbc = init_cbc("-");
-	pop_back(cbc);
+	char buffer[VECTOR_LEN + 1];
+	int temp;
+	CBC cbc;
+	strcpy(buffer, "initial___vector");
+	//fscanf(file, "%s", buffer);
 
-	while (fgets(buffer, sizeof buffer, file) != NULL)
+	cbc = init_cbc(buffer);
+
+	while (fscanf(file, "%s%d", buffer, &temp)==2)
 	{
-		if (buffer[0] == '0' + num)  // find row
-		{
-			char *token = strtok(buffer, " ");
-			char iv[VECTOR_LEN + 1];
-
-			while ((token = strtok(NULL, " ")) != NULL)
-			{
-				memcpy(iv, token, VECTOR_LEN);
-				iv[VECTOR_LEN] = 0;
-
-				push_back(cbc, iv);
-			}
-		}
+		push_back(cbc, buffer, temp);
 	}
 
 	fclose(file);
@@ -209,24 +133,16 @@ CBC load_cbc(const char *filename, int num)
 
 void save_cbc(const char *filename, CBC cbc)
 {
-	FILE *file = fopen(filename, "a");
-	char buffer[4097];
-	char *buffer_iter = buffer;
+	FILE *file = fopen(filename, "w");
+	Block iter = cbc->head;
 
-	strcpy(buffer_iter, (char[3]) { cbc_count + '0', ' ', '\0' });
-	buffer_iter += 2;
-
-	for (Block iter = cbc->head; iter != NULL; iter = iter->next)
-	{
-		strncpy(buffer_iter, iter->iv, VECTOR_LEN);
-		buffer_iter[VECTOR_LEN] = ' ';
-		buffer_iter += VECTOR_LEN + 1;
+	while (iter != NULL) {
+		fprintf(file, "%s %d ", iter->iv, iter->data_len);
+		iter = iter->next;
 	}
 
-	buffer_iter[-1] = '\n';
-	*buffer_iter = 0;
+	fprintf(file, "\n");
 
-	fprintf(file, "%s", buffer);
 	fclose(file);
 
 	free_cbc(&cbc);
@@ -270,31 +186,43 @@ char *vigenere(char *data, const char *key, size_t data_len, char op)
 
 void encrypt(CBC cbc, char *plaintext, const char *key, size_t plaintext_len)
 {
+	int ok = 0;
+	if (cbc->len == 0) {
+		push_back(cbc, "initial___vector", plaintext_len);
+		ok = 1;
+	}
+	
+
 	xor(plaintext, cbc->tail->iv, plaintext_len);
 
 	vigenere(plaintext, key, plaintext_len, ENCRYPT);
 
-	push_back(cbc, plaintext);
+
+	if (!ok) {
+		push_back(cbc, plaintext, plaintext_len);
+		cbc->tail->data_len = plaintext_len;
+	}
 }
 
 
 /* IF pop IS 1 LAST BLOCK GETS POPPED */
 void decrypt(CBC cbc, char *ciphertext, const char *key, size_t ciphertext_len, char pop)
 {
-	if (cbc->len == 1)
+	if (cbc->len == 0)
 		return;
 
 	Block remember_block = cbc->tail->prev;
 
-	for (Block iter = cbc->tail; iter != cbc->head; iter = iter->prev)
+	for (Block iter = cbc->tail; iter != NULL; iter = iter->prev)
 	{
 		if (strncmp(ciphertext, iter->iv, 5) == 0)
 		{
-			remember_block = iter->prev;
+			remember_block = iter;
 			break;
 		}
 	}
-
+	if (remember_block == NULL)
+		remember_block = cbc->tail;
 	vigenere(ciphertext, key, ciphertext_len, DECRYPT);
 
 	xor(ciphertext, remember_block->iv, ciphertext_len);
