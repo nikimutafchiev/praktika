@@ -43,11 +43,13 @@ void destroy_packet(struct stories_packet *packet)
 {
 	for (size_t i = 0; i < packet->size; i++)
 	{
-		free(packet->buff[i]->date);
-		free(packet->buff[i]->user);
-		free(packet->buff[i]->story);
-		free(packet->buff[i]->title);
-		free(packet->buff[i]);
+		if (packet->buff[i]!=NULL) {
+			free(packet->buff[i]->date);
+			free(packet->buff[i]->user);
+			free(packet->buff[i]->story);
+			free(packet->buff[i]->title);
+			free(packet->buff[i]);
+		}
 	}
 }
 
