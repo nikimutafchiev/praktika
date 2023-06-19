@@ -18,6 +18,7 @@ typedef struct cbc_t *CBC;
 struct block_t
 {
 	char *iv;
+    size_t data_len;  //
 
 	Block next;
 	Block prev;
@@ -43,21 +44,16 @@ struct cbc_t
          |________|      |________|      |________|      |________|
 */
 
-static int cbc_count = 0;
-
 CBC init_cbc(const char *);
 Block init_block(const char *);
 
 void free_cbc(CBC);
 void free_block(Block);
 
-void push_front(CBC, const char *);
 void push_back(CBC, const char *);
-void pop_front(CBC);
 void pop_back(CBC);
-void clear(CBC);
 
-int is_empty(CBC);
+size_t size_from_iv(const char *);
 
 CBC load_cbc(const char *, int);  // from file
 void save_cbc(const char *, CBC);  // to file
