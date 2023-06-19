@@ -54,7 +54,6 @@ struct stories_packet *put_in_structs(const char *filename, char *password, CBC 
 		perror("fopen");
 		return NULL;
 	}
-
 	struct stories_packet *packet = init_packet(4);
 	char *title = malloc(sizeof(char) * TITLEMAX);  // Replace MAX_LENGTH with the maximum expected length of the string
 	char *user = malloc(sizeof(char) * USRMAX);
@@ -62,8 +61,9 @@ struct stories_packet *put_in_structs(const char *filename, char *password, CBC 
 	char *story = malloc(sizeof(char) * STRYMAX);
 	while (fscanf(file, "%[^\n]\n%[^\n]\n%[^\n]\n%[^\n]\n", user, date, title, story) == 4)
 	{
-		decrypt(cbc, story, password, strlen(story), 0);
-
+		size_t size = size_from_iv(cbc, story);
+		decrypt(cbc, story, password, size, 0);
+		story[size] = 0;
 		packet->size++;
 		if (packet->size > packet->capacity)
 			packet->buff = resize_packet(packet);
@@ -155,7 +155,10 @@ void log_in(CBC cbc)
 	do
 	{
 		printf("\nEnter username: "); gets(input_username);
+		if (!strcmp(input_username, "exit"))
+			goto end;
 		printf("\nEnter password: "); gets(input_pswrd);
+		
 	} while (!validate_user(input_username, input_pswrd, "users.txt"));
 
 	do
@@ -186,8 +189,10 @@ void log_in(CBC cbc)
 				if (k > date_stories->size)
 					k = date_stories->size;
 
-				for (; i < k; i++)
-					printf("\nTitle: %s\t\tDate: %s", date_stories->buff[i]->title, date_stories->buff[i]->date);
+				for (; i < k; i++) {
+					if(date_stories->buff[i]!=NULL)
+						printf("\nTitle: %s\t\tDate: %s", date_stories->buff[i]->title, date_stories->buff[i]->date);
+				}
 
 				printf("\nTo view more stories - view more, to view all stories - view all or exit for exit: "); gets(view_choice);
 				lowercase_words(view_choice);
@@ -221,6 +226,7 @@ void log_in(CBC cbc)
 			free(user_stories);
 		}
 	} while (strcmp(choice, "exit"));
+end:;
 }
 
 int main()
